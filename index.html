@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket App</title>
+  </head>
+  <body>
+    <p id="count"></p>
+    <form id="send" action="">
+      <input type="text" id="input" autofocus />
+      <button type="submit">Send</button>
+    </form>
+    <div id="messages"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io('localhost:3000');
+
+      const form = document.getElementById('send');
+      const input = document.getElementById('input');
+      const messages = document.getElementById('messages');
+      const count = document.getElementById('count');
+
+      const addMessage = (msg) => {
+        const message = document.createElement('p');
+        message.innerHTML = msg;
+        messages.append(message);
+      };
+
+      const sendMessage = (event) => {
+        event.preventDefault();
+        socket.emit('client_msg', {
+          msg: input.value,
+        });
+        input.value = '';
+      };
+
+      const updateCountVisitors = (countVisitors) => {
+        count.innerHTML = '';
+        count.innerHTML = `Count visitors: ${countVisitors}`;
+      };
+
+      socket.on('client_connect', (data) => {
+        addMessage(data.msg);
+        updateCountVisitors(data.countVisitors);
+      });
+      socket.on('client_disconnect', (data) => {
+        addMessage(data.msg);
+        updateCountVisitors(data.countVisitors);
+      });
+      socket.on('server_msg', (data) => addMessage(data.msg));
+
+      form.addEventListener('submit', sendMessage);
+    </script>
+  </body>
+</html>
